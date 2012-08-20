@@ -3,6 +3,7 @@ const int PwrPin=8;
 bool Daemon=false;
 int Counter=0;
 bool isFraked=false;
+const String noData="!Data to Report";
 
 
 #include <SoftwareSerial.h>
@@ -29,7 +30,7 @@ void setup() {
   mySerial.write(12);
   delay(5);
   mySerial.write(18);
-  mySerial.print("!Data to Report");
+  mySerial.print(noData);
 }
 
 void loop() {
@@ -73,7 +74,7 @@ void loop() {
      mySerial.write(12);
      delay(5);
      mySerial.write(18);
-     mySerial.print("!Data to report");
+     mySerial.print(noData);
      Counter=0;
      Daemon=false;
      isFraked=false;
