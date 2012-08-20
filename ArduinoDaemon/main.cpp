@@ -75,9 +75,9 @@ int main(int argc,char *argv[])
         ***********
         *Legend:  *
         *$==Stable*
-        *C==Clear *
+        *L==Clear *
         *N==endl  *
-        *P==nop   *
+        *#==nop   *
         *F==FUUUU * (alarm)
         ***********
         */
@@ -89,7 +89,7 @@ int main(int argc,char *argv[])
         Temp=Sensor.FetchTemp();
         if(OldValue!=Temp)
         {
-            convert<<"CTemp="<<Temp<<endl;
+            convert<<"LTemp="<<Temp<<endl;
             if(MaxTemp<=Temp)
             {
                 //CPU is over safe thresh-hold!
@@ -105,7 +105,7 @@ int main(int argc,char *argv[])
                 the_signal.Transmit();
                 goOn=false;
             }else{
-                the_signal.SetData("P");
+                the_signal.SetData("#");
                 the_signal.Transmit();
             }
         }

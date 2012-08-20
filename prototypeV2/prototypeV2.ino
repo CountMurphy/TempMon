@@ -29,7 +29,7 @@ void setup() {
   mySerial.write(12);
   delay(5);
   mySerial.write(18);
-  mySerial.print("!Data to report");
+  mySerial.print("!Data to Report");
 }
 
 void loop() {
@@ -49,14 +49,14 @@ void loop() {
         case '$':
           mySerial.print("Stable");
           break;
-        case 'C':
+        case 'L':
           mySerial.write(12);
           delay(10);
           break;
         case 'N':
            mySerial.write(148);
            break;
-        case 'P':
+        case '#':
            break;
         case 'F':
           isFraked=true;
