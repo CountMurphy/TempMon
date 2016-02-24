@@ -64,20 +64,20 @@ int main(int argc,char *argv[])
         if(argument=="help")
         {
             cout<<"The Commands are:"<<endl<<endl;
-            cout<<"-start to start the daemon"<<endl<<endl;
-            cout<<"-list to list all possible chips to read sensor data from and there subfeatures"<<endl<<"Please read the .conf file for more info"<<endl<<endl;
-            cout<<"-stop to terminate all running instances of the daemon"<<endl;
-            cout<<"-restart to restart daemon"<<endl;
+            cout<<"--start to start the daemon"<<endl<<endl;
+            cout<<"--list to list all possible chips to read sensor data from and there subfeatures"<<endl<<"Please read the .conf file for more info"<<endl<<endl;
+            cout<<"--stop to terminate all running instances of the daemon"<<endl;
+            cout<<"--restart to restart daemon"<<endl;
             return 0;
         }
 
         if(argument!="restart" && argument!="start")
         {
-            cout<<"Unknown Command Arguement. Pleaes run tempMon -help"<<endl;
+            cout<<"Unknown Command Arguement. Pleaes run tempMon --help"<<endl;
             return -1;
         }
     }else{
-        cout<<"Please Type tempMon -help for instructions"<<endl;
+        cout<<"Please Type tempMon --help for instructions"<<endl;
         return -1;
     }
 
@@ -106,9 +106,13 @@ int main(int argc,char *argv[])
     sleep(5);
     bool goOn=false;
     ostringstream convert;
+
+    int failCount=0;
     while(true)
     {
-        /*
+        try
+        {
+            /*
         ***********
         *Legend:  *
         *$==Stable*
@@ -119,45 +123,56 @@ int main(int argc,char *argv[])
         ***********
         */
 
-        //clear convert buffer
-        convert.str(string());
+            //clear convert buffer
+            convert.str(string());
 
-        double OldCPU=Temp;
-        Temp=Sensor.FetchTemp();
-        bool StableCPU;
-        StableCPU= (OldCPU==Temp);
-        string DataToSend="";
-
-
-        //There seems to be a bug in lm_sensors.  Every now and then the reading will not be accurate (IE temp jumping 30 degrees in a second and then back down)
-        //Check if high value is consistant for over a second
-        if(Temp>=MaxTemp && (OldCPU>=MaxTemp))
-        {
-            //CPU is over safe thresh-hold!
-            DataToSend="F";
-        }
+            double OldCPU=Temp;
+            Temp=Sensor.FetchTemp();
+            bool StableCPU;
+            StableCPU= (OldCPU==Temp);
+            string DataToSend="";
 
 
-        if(!StableCPU)
-        {
-            convert<<"LCPU="<<Temp<<endl;
-
-            DataToSend+=convert.str();
-            goOn=true;
-        }else{
-            if(goOn)
+            //There seems to be a bug in lm_sensors.  Every now and then the reading will not be accurate (IE temp jumping 30 degrees in a second and then back down)
+            //Check if high value is consistant for over a second
+            if(Temp>=MaxTemp && (OldCPU>=MaxTemp))
             {
-                //insert Stable commands
-
-                DataToSend+= "N$";
-                goOn=false;
-            }else{
-                DataToSend+= "#";
+                //CPU is over safe thresh-hold!
+                DataToSend="F";
             }
+
+
+            if(!StableCPU)
+            {
+                convert<<"LCPU="<<Temp<<endl;
+
+                DataToSend+=convert.str();
+                goOn=true;
+            }else{
+                if(goOn)
+                {
+                    //insert Stable commands
+
+                    DataToSend+= "N$";
+                    goOn=false;
+                }else{
+                    DataToSend+= "#";
+                }
+            }
+
+            the_signal.SetData(DataToSend);
+            the_signal.Transmit();
+        }
+        catch(...)
+        {
+            cerr<<"Could not read libs. Will Fail after 30 trys"<<endl;
+            if(failCount>=30)
+            {
+                return -1;
+            }
+            failCount++;
         }
 
-        the_signal.SetData(DataToSend);
-        the_signal.Transmit();
         sleep(1);
     }
 
